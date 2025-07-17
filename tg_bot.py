@@ -3,7 +3,7 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
 from louis_vuitton_parser import parse_louis_vuitton_product
 import os
-from parsers import louis_vuitton, farfetch, stussy
+from parsers import louis_vuitton, farfetch, stussy, supreme
 from urllib.parse import urlparse
 
 TOKEN = os.getenv("TELEGRAM_TOKEN")
@@ -26,6 +26,8 @@ def get_parser(url: str):
         return farfetch.parse
     if "stussy" in domain:
         return stussy.parse
+    if "supreme" in domain:
+        return supreme.parse
     return None
 
 async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -36,7 +38,7 @@ async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("⏳ Парсим карточку товара...")
     parser = get_parser(url)
     if not parser:
-        await update.message.reply_text("Этот магазин пока не поддерживается. Пришлите ссылку с Louis Vuitton, Farfetch или Stussy.")
+        await update.message.reply_text("Этот магазин пока не поддерживается. Пришлите ссылку с Louis Vuitton, Farfetch, Stussy или Supreme.")
         return
     data = parser(url)
     if not data:
