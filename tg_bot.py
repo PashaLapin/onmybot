@@ -53,15 +53,20 @@ async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(text, parse_mode='HTML')
 
 async def send_debug(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print("Вызвана команда /debug")
     debug_path = "lv_debug.html"
     if os.path.exists(debug_path):
+        print("Файл найден, читаю первые 2000 символов")
         with open(debug_path, "r", encoding="utf-8") as f:
             content = f.read(2000)
         if content:
+            print("Отправляю текст пользователю")
             await update.message.reply_text(f"Первые 2000 символов lv_debug.html:\n\n{content}")
         else:
+            print("Файл lv_debug.html пуст")
             await update.message.reply_text("Файл lv_debug.html пуст.")
     else:
+        print("Файл lv_debug.html не найден")
         await update.message.reply_text("Файл lv_debug.html не найден.")
 
 def main():
