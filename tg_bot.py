@@ -1,11 +1,11 @@
 import logging
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
-from louis_vuitton_parser import parse_louis_vuitton_product
 import os
 from parsers import louis_vuitton, farfetch, stussy, supreme
 from urllib.parse import urlparse
 
+print('Запуск tg_bot.py')
 TOKEN = os.getenv("TELEGRAM_TOKEN")
 if not TOKEN or not TOKEN.strip():
     raise RuntimeError("TELEGRAM_TOKEN не задан! Проверьте переменные окружения на Railway. Токен должен быть передан через TELEGRAM_TOKEN.")
@@ -52,9 +52,18 @@ async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text(text, parse_mode='HTML')
 
+async def send_debug(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    debug_path = "lv_debug.html"
+    if os.path.exists(debug_path):
+        with open(debug_path, "rb") as f:
+            await update.message.reply_document(document=f, filename="lv_debug.html")
+    else:
+        await update.message.reply_text("Файл lv_debug.html не найден.")
+
 def main():
     app = ApplicationBuilder().token(TOKEN).build()
     app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("debug", send_debug))
     app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_link))
     app.run_polling()
 
