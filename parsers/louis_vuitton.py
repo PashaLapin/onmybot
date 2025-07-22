@@ -37,15 +37,18 @@ def parse(url: str):
     html = driver.page_source
     driver.quit()
     soup = BeautifulSoup(html, "lxml")
-    # Название: ищем h1 с классом lv-product__name, затем старые способы
+    # Название: ищем по разным вариантам классов и тегу h1
     title = None
+    # 1. Новый вариант: h1 с классом lv-product__name (и его вариации)
     title_tag = soup.find("h1", class_="lv-product__name")
+    if not title_tag:
+        title_tag = soup.find("h1", class_="lv-product__name heading-s")
+    if not title_tag:
+        title_tag = soup.find("h1", class_="lv-product__name heading-m")
+    if not title_tag:
+        title_tag = soup.find("h1")
     if title_tag:
         title = title_tag.get_text(strip=True)
-    if not title:
-        title_tag = soup.find("h1")
-        if title_tag:
-            title = title_tag.get_text(strip=True)
     if not title:
         meta_title = soup.find("meta", property="og:title")
         if meta_title and meta_title.get("content"):
@@ -55,15 +58,15 @@ def parse(url: str):
     if not title:
         print("[LouisVuitton] Не найдено название! Фрагмент:", soup.prettify()[:2000])
         title = "Не удалось найти название"
-    # Цена: ищем span с классом notranslate, затем старые способы
+    # Цена: ищем по разным вариантам классов и span
     price = None
     price_tag = soup.find("span", class_="notranslate")
+    if not price_tag:
+        price_tag = soup.find("span", class_="lv-product__price")
+    if not price_tag:
+        price_tag = soup.find(lambda tag: tag.name == "span" and "€" in tag.get_text())
     if price_tag:
         price = price_tag.get_text(strip=True)
-    if not price:
-        price_tag = soup.find(lambda tag: tag.name in ["span", "div"] and tag.get_text().strip().endswith("€"))
-        if price_tag:
-            price = price_tag.get_text(strip=True)
     if not price:
         # Иногда цена в meta
         meta_price = soup.find("meta", property="product:price:amount")
